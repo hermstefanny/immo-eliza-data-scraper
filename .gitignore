@@ -1,5 +1,6 @@
 # Virtual Environment
 /venv
 
-# Other non relevant folders
+# Other non relevant folders and files
 /drafts
+*.png
