@@ -14,19 +14,23 @@ class PropertyScrapping:
         self.urls = []
         self.total_time = 0
 
-    def open_links_file(self, csv_path: str, number_of_rows: int = None) -> None:
+    def open_links_file(
+        self, csv_path: str, has_header: bool, number_of_rows: int = None
+    ) -> None:
 
         try:
-            urls_df = pd.read_csv(csv_path, header=0, nrows=number_of_rows)
-            if "link" in urls_df.columns:
-                urls = urls_df["link"].tolist()
+            if has_header:
+                urls_df = pd.read_csv(csv_path, header=0, nrows=number_of_rows)
+                if "link" in urls_df.columns:
+                    self.urls = urls_df["link"].tolist()
+                else:
+                    self.urls = urls_df.iloc[:, 0].tolist()
             else:
-                urls = urls_df.iloc[:, 0].tolist()
+                urls_df = pd.read_csv(csv_path, header=None, nrows=number_of_rows)
+                self.urls = urls_df.iloc[:, 0].tolist()
+
         except Exception as e:
             print(f"Error {e}")
-            urls = []
-
-        self.urls = urls
 
     def get_raw_property(self, url: str, session: requests.Session) -> BeautifulSoup:
 
