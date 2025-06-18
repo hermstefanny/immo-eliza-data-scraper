@@ -54,17 +54,17 @@ class listingScrapping:
     def call_driver(self) -> None:
 
         self.provinces = [
-            # "antwerp",
-            # "vlaams-brabant",
-            # "brabant-wallon",
-            # "east-flanders",
-            # "west-flanders",
-            # "hainaut",
+            "antwerp",
+            "vlaams-brabant",
+            "brabant-wallon",
+            "east-flanders",
+            "west-flanders",
+            "hainaut",
             "brussels",
             "liege",
             "limburg",
-            # "namur",
-            # "luxembourg",
+            "namur",
+            "luxembourg",
         ]
 
         ua = UserAgent()
