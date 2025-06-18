@@ -21,7 +21,7 @@ class listingScrapping:
     def get_listing_links(self, driver, url: str) -> None:
 
         driver.get(url)
-        time.sleep(random.uniform(3, 7))
+        time.sleep(random.uniform(3, 5))
 
         # Click the cookie banner if present
         try:
@@ -51,55 +51,54 @@ class listingScrapping:
             print(link)
             self.links.append(link)
 
+    def call_driver(self) -> None:
 
-def call_driver(self) -> None:
+        self.provinces = [
+            # "antwerp",
+            # "vlaams-brabant",
+            # "brabant-wallon",
+            # "east-flanders",
+            # "west-flanders",
+            # "hainaut",
+            "brussels",
+            "liege",
+            "limburg",
+            # "namur",
+            # "luxembourg",
+        ]
 
-    self.provinces = [
-        # "antwerp",
-        # "vlaams-brabant",
-        # "brabant-wallon",
-        # "east-flanders",
-        # "west-flanders",
-        # "hainaut",
-        # "brussels",
-        # "liege",
-        # "limburg",
-        # "namur",
-        "luxembourg",
-    ]
+        ua = UserAgent()
 
-    ua = UserAgent()
+        # Options for Driver
+        options = Options()
+        options.add_argument("start-maximized")
+        options.add_argument(f"user-agent={ua.random}")
+        options.add_argument("--enable-javascript")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option("useAutomationExtension", False)
 
-    # Options for Driver
-    options = Options()
-    options.add_argument("start-maximized")
-    options.add_argument(f"user-agent={ua.random}")
-    options.add_argument("--enable-javascript")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
+        # Selenium Driver
+        driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()), options=options
+        )
+        driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+            },
+        )
 
-    # Selenium Driver
-    driver = webdriver.Chrome(
-        service=ChromeService(ChromeDriverManager().install()), options=options
-    )
-    driver.execute_cdp_cmd(
-        "Page.addScriptToEvaluateOnNewDocument",
-        {
-            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-        },
-    )
+        for province in self.provinces:
+            for page in range(1, 51):
 
-    for province in self.provinces:
-        for page in range(1, 51):
+                listing_url = f"https://immovlan.be/en/real-estate?transactiontypes=for-sale,in-public-sale&propertytypes=house,apartment&provinces={province}&islifeannuity=no&page={str(page)}&noindex=1"
 
-            listing_url = f"https://immovlan.be/en/real-estate?transactiontypes=for-sale,in-public-sale&propertytypes=house,apartment&provinces={province}&islifeannuity=no&page={str(page)}&noindex=1"
+                self.get_listing_links(driver, listing_url)
 
-            self.get_listing_links(driver, listing_url)
+        driver.close()
 
-    driver.close()
-
-    def save_to_csv(self) -> None:
-        with open("listing_links.csv", "w") as file:
+    def save_to_csv(self, file_name: str) -> None:
+        with open(file_name, "w") as file:
             csv_writer = csv.writer(file)
             for link in self.links:
                 csv_writer.writerow([link])
