@@ -36,7 +36,7 @@ class PropertyScrapping:
 
         start_time = time()
 
-        sleep(random.uniform(1, 2.5))
+        sleep(random.uniform(0.1, 0.25))
 
         try:
             response = session.get(url)
@@ -65,27 +65,27 @@ class PropertyScrapping:
             type_of_property = None
 
         try:
-            code = soup.find(class_="vlancode")
+            code = soup.find(class_="vlancode").text
         except Exception as e:
             print(f"CODE error {e} when trying to access  {url}\n")
             code = None
 
         try:
-            price = soup.find(class_="detail__header_price_data")
+            price = soup.find(class_="detail__header_price_data").text
         except Exception as e:
             print(f"PRICE error {e} when trying to access  {url}\n")
             price = None
 
         try:
-            locality = soup.find(class_="city-line")
+            locality = soup.find(class_="city-line").text
         except Exception as e:
             print(f"LOCALITY error {e} when trying to access  {url}\n")
             locality = None
 
-        property_characteristics["property_code"] = code.text
+        property_characteristics["property_code"] = code
         property_characteristics["type_of_property"] = type_of_property
-        property_characteristics["price"] = price.text
-        property_characteristics["locality"] = locality.text
+        property_characteristics["price"] = price
+        property_characteristics["locality"] = locality
 
         for tag in soup.find_all("h4", class_=False):
             characteristic_name = "_".join(list(map(str.lower, tag.text.split())))
@@ -121,7 +121,7 @@ class PropertyScrapping:
             soup = self.get_raw_property(url, s)
             self.properties.append(self.get_property_characteristics(url, soup))
 
-        print(f"This scrapping has lasted {self.total_time}")
+        print(f"This scrapping has lasted {self.total_time/60} minutes")
 
     def save_to_csv(self, file_name: str) -> None:
         df_properties = pd.json_normalize(self.properties)
