@@ -14,7 +14,7 @@ class PropertyScrapping:
         self.urls = []
         self.total_time = 0
 
-    def open_links_file(self, csv_path: str, number_of_rows: int) -> None:
+    def open_links_file(self, csv_path: str, number_of_rows: int = None) -> None:
 
         try:
             urls_df = pd.read_csv(csv_path, header=0, nrows=number_of_rows)
@@ -32,7 +32,7 @@ class PropertyScrapping:
 
         start_time = time()
 
-        sleep(random.uniform(1.5, 3))
+        sleep(random.uniform(1, 2.5))
 
         try:
             response = session.get(url)
@@ -53,16 +53,34 @@ class PropertyScrapping:
 
         property_characteristics = dict()
 
-        code = soup.find(class_="vlancode")
+        try:
+            type_prop = soup.find(class_="detail__header_title_main")
+            type_of_property = type_prop.text.split()[0]
+        except Exception as e:
+            print(f"TYPE PROPERTY error {e} when trying to access  {url}\n")
+            type_of_property = None
+
+        try:
+            code = soup.find(class_="vlancode")
+        except Exception as e:
+            print(f"CODE error {e} when trying to access  {url}\n")
+            code = None
+
+        try:
+            price = soup.find(class_="detail__header_price_data")
+        except Exception as e:
+            print(f"PRICE error {e} when trying to access  {url}\n")
+            price = None
+
+        try:
+            locality = soup.find(class_="city-line")
+        except Exception as e:
+            print(f"LOCALITY error {e} when trying to access  {url}\n")
+            locality = None
+
         property_characteristics["property_code"] = code.text
-
-        type_of_property = soup.find(class_="detail__header_title_main")
-        property_characteristics["type_of_property"] = type_of_property.text.split()[0]
-
-        price = soup.find(class_="detail__header_price_data")
+        property_characteristics["type_of_property"] = type_of_property
         property_characteristics["price"] = price.text
-
-        locality = soup.find(class_="city-line")
         property_characteristics["locality"] = locality.text
 
         for tag in soup.find_all("h4", class_=False):
