@@ -1,0 +1,106 @@
+import requests
+import random
+import pandas as pd
+
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+from time import time, sleep
+
+
+# Class definition
+class PropertyScrapping:
+    def __init__(self) -> None:
+        self.properties = []
+        self.urls = []
+        self.total_time = 0
+
+    def open_links_file(self, csv_path: str, number_of_rows: int) -> None:
+
+        try:
+            urls_df = pd.read_csv(csv_path, header=0, nrows=number_of_rows)
+            if "link" in urls_df.columns:
+                urls = urls_df["link"].tolist()
+            else:
+                urls = urls_df.iloc[:, 0].tolist()
+        except Exception as e:
+            print(f"Error {e}")
+            urls = []
+
+        self.urls = urls
+
+    def get_raw_property(self, url: str, session: requests.Session) -> BeautifulSoup:
+
+        start_time = time()
+
+        sleep(random.uniform(1.5, 3))
+
+        try:
+            response = session.get(url)
+            content = response.content
+            print(response)
+            soup = BeautifulSoup(content, "html.parser")
+        except Exception as e:
+            print(f"Error {e}")
+
+        end_time = time()
+        scrapping_duration = end_time - start_time
+        print(f"This scrap has taken {scrapping_duration}")
+        self.total_time += scrapping_duration
+
+        return soup
+
+    def get_property_characteristics(self, url: str, soup: BeautifulSoup) -> dict:
+
+        property_characteristics = dict()
+
+        code = soup.find(class_="vlancode")
+        property_characteristics["property_code"] = code.text
+
+        type_of_property = soup.find(class_="detail__header_title_main")
+        property_characteristics["type_of_property"] = type_of_property.text.split()[0]
+
+        price = soup.find(class_="detail__header_price_data")
+        property_characteristics["price"] = price.text
+
+        locality = soup.find(class_="city-line")
+        property_characteristics["locality"] = locality.text
+
+        for tag in soup.find_all("h4", class_=False):
+            characteristic_name = "_".join(list(map(str.lower, tag.text.split())))
+            property_characteristics[characteristic_name] = tag.find_next().text
+
+        property_characteristics["property_url"] = url
+
+        return property_characteristics
+
+    def run_scrapping(self) -> None:
+        ua = UserAgent()
+        headers = {
+            "User-Agent": ua.random,
+            "Accept": (
+                "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                "image/avif,image/webp,*/*;q=0.8"
+            ),
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "TE": "trailers",
+        }
+
+        s = requests.Session()
+        s.headers.update(headers)
+
+        for url in self.urls:
+            soup = self.get_raw_property(url, s)
+            self.properties.append(self.get_property_characteristics(url, soup))
+
+        print(f"This scrapping has lasted {self.total_time}")
+
+    def save_to_csv(self, file_name: str) -> None:
+        df_properties = pd.json_normalize(self.properties)
+        df_properties.to_csv(file_name, index=False, encoding="utf-8")
