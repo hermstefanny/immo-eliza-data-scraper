@@ -1,5 +1,6 @@
 from typing import List
 import pandas as pd
+import os
 
 
 class PreliminarCleaning:
@@ -51,8 +52,8 @@ class PreliminarCleaning:
         clean_pd = df.dropna(axis=1, thresh=0.10 * len(df))
         return clean_pd
 
-    def row_cleaning(self, df: pd, rows_to_clean: List[int]) -> pd:
-        pass
+    def row_cleaning(self, df: pd, attribute_to_check) -> pd:
+        return df[~df[attribute_to_check].isnull()]
 
     def columns_selection(self, df: pd) -> List[str]:
         columns_to_eliminate = []
@@ -76,4 +77,5 @@ class PreliminarCleaning:
         columns_to_eliminate.extend(columns_3)
 
         print(len(columns_to_eliminate))
+
         return columns_to_eliminate
