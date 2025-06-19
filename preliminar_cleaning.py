@@ -1,10 +1,11 @@
+from typing import List
 import pandas as pd
 
 
 class PreliminarCleaning:
     def __init__(self, file_name: str) -> None:
         self.file_name = file_name
-        self.has_header = False
+        self.has_header = True
 
     def file_has_header(self) -> None:
         with open(self.file_name, "r", encoding="utf-8") as f:
@@ -15,14 +16,14 @@ class PreliminarCleaning:
 
         try:
             if self.has_header:
-                urls_df = pd.read_csv(self.file_name, header=0)
+                df = pd.read_csv(self.file_name, header=0)
             else:
-                urls_df = pd.read_csv(self.file_name, header=None)
+                df = pd.read_csv(self.file_name, header=None)
 
         except Exception as e:
             print(f"Error {e}")
 
-        return urls_df
+        return df
 
     def removing_urls(self, string_to_remove: str, df: pd) -> pd:
 
@@ -37,9 +38,38 @@ class PreliminarCleaning:
     def save_to_csv(self, df: pd, outfile_name: str) -> None:
         df.to_csv(outfile_name, index=False, header=False)
 
+    def column_cleaning(
+        self, df: pd, columns_to_clean: List[str], in_place: bool = False
+    ) -> pd:
+        df = df.drop(columns=columns_to_clean, inplace=in_place)
 
-if __name__ == "__main__":
-    cleaning = PreliminarCleaning("listing_links-10-11.csv")
-    preliminar_df = cleaning.open_csv_file()
-    final_df = cleaning.removing_urls("project", preliminar_df)
-    cleaning.save_to_csv(final_df, "final_links_10-11.csv")
+        # dropping columns that have less than 10% values
+        clean_pd = df.dropna(axis=1, thresh=0.10 * len(df))
+        return clean_pd
+
+    def row_cleaning(self, df: pd, rows_to_clean: List[int]) -> pd:
+        pass
+
+    def columns_selection(self, df: pd) -> List[str]:
+        columns_to_eliminate = []
+        all_columns = list(df.columns.values)
+
+        columns_to_eliminate = [
+            column
+            for column in all_columns
+            if column.endswith(
+                (".pdf", ".png", ".jpg", "jpeg", "docx", "termsandconditions")
+            )
+        ]
+
+        columns_2 = [
+            column for column in all_columns if column.startswith("documents?id")
+        ]
+        columns_to_eliminate.extend(columns_2)
+
+        columns_3 = [column for column in all_columns if "score_represents" in column]
+
+        columns_to_eliminate.extend(columns_3)
+
+        print(len(columns_to_eliminate))
+        return columns_to_eliminate
