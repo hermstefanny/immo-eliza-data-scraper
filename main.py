@@ -5,23 +5,24 @@ import pandas as pd
 import os
 
 
-def main():
+def scrape_URLS() -> None:
+    listings = listingScrapping()
+    listings.call_driver()
+    listings.save_to_csv("data/listing_links.csv")
 
-    # Scrapping URLS
-    ## listings = listingScrapping()
-    ## listings.call_driver()
-    ## listings.save_to_csv("data/listing_links.csv")
 
-    # Scrapping each property
-    # cleaning_links_file = PreliminarCleaning("data/final_links_10-11.csv")
+def scrape_properties(input_file: str, output_file: str) -> None:
+    cleaning_links_file = PreliminarCleaning("data/final_links_10-11.csv")
 
-    # scrapping = PropertyScrapping()
-    # scrapping.open_links_file(
-    #    "data/final_links_10-11.csv", cleaning_links_file.file_has_header(), 10
-    # )
-    # scrapping.run_scrapping()
-    # scrapping.save_to_csv("data/scrapped_properties_10-11.csv")
+    scrapping = PropertyScrapping()
+    scrapping.open_links_file(
+        "data/final_links_10-11.csv", cleaning_links_file.url_file_has_header(), 10
+    )
+    scrapping.run_scrapping()
+    scrapping.save_to_csv("data/scrapped_properties_10-11.csv")
 
+
+def cleaning_files() -> None:
     cleaning_properties_file = PreliminarCleaning("data/scrapped_properties_1-3.csv")
     print(cleaning_properties_file.open_csv_file())
 
@@ -78,7 +79,6 @@ def main():
         column_clean_df = cleaning_properties_file.column_cleaning(
             column_clean__first_df, columns_to_drop
         )
-
         clean_df = cleaning_properties_file.row_cleaning(
             column_clean_df, "property_code"
         )
@@ -88,6 +88,19 @@ def main():
     total_df = pd.concat(all_dfs, ignore_index=True, sort=True)
 
     total_df.to_csv("data/final_data.csv", index=False)
+
+
+def main():
+    """Scrapping URLS"""
+    # scrape_URLS()
+
+    """Scrapping each property by batches"""
+    ## changing manually the name everytime
+
+    # scrape_properties(data/final_links_10-11.csv, data\scrapped_properties_10-11.csv)
+
+    """Performing cleaning of the singular files and obtain a csv"""
+    cleaning_files()
 
 
 if __name__ == "__main__":

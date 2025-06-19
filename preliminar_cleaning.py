@@ -8,10 +8,10 @@ class PreliminarCleaning:
         self.file_name = file_name
         self.has_header = True
 
-    def file_has_header(self) -> None:
+    def url_file_has_header(self) -> bool:
         with open(self.file_name, "r", encoding="utf-8") as f:
             sample = f.readline()
-            self.has_header = "http" not in sample.lower()
+            return "http" not in sample.lower()
 
     def open_csv_file(self) -> pd:
 
