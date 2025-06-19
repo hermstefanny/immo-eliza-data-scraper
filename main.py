@@ -6,12 +6,18 @@ import os
 
 
 def scrape_URLS() -> None:
+    """
+    Function to obtain the URLS files
+    """
     listings = listingScrapping()
     listings.call_driver()
     listings.save_to_csv("data/listing_links.csv")
 
 
 def scrape_properties(input_file: str, output_file: str) -> None:
+    """
+    Function to scrape the proeprties listed in the URLs file
+    """
     cleaning_links_file = PreliminarCleaning("data/final_links_10-11.csv")
 
     scrapping = PropertyScrapping()
@@ -23,6 +29,9 @@ def scrape_properties(input_file: str, output_file: str) -> None:
 
 
 def cleaning_files() -> None:
+    """
+    Function to clean the scrapped files
+    """
     cleaning_properties_file = PreliminarCleaning("data/scrapped_properties_1-3.csv")
     print(cleaning_properties_file.open_csv_file())
 
@@ -61,16 +70,18 @@ def cleaning_files() -> None:
     ]
 
     all_dfs = []
+    ## Loop will perform cleaning in each file, dropping out the columns that are garbage attributes, but also
+    ## the columns that are deemed unnecessary
     for file in properties_file_names:
         file_path = os.path.join("data", file)
         cleaning_properties_file = PreliminarCleaning(file_path)
         raw_df = cleaning_properties_file.open_csv_file()
 
-        ### Wrong attributes deletion
+        ### Garbage attributes deletion
         column_clean__first_df = cleaning_properties_file.column_cleaning(
             raw_df, cleaning_properties_file.columns_selection(raw_df)
         )
-        ### Extra attributes deletion
+        ### Unnecessary attributes deletion
         columns_to_drop = [
             column
             for column in column_clean__first_df.columns.values

@@ -13,13 +13,20 @@ import random
 import csv
 
 
-# Class definition
 class listingScrapping:
+    """
+    Class that implements the functionalities needed to scrape the URLs listing from https://immovlan.be/en
+
+    """
+
     def __init__(self) -> None:
+        """
+        Class constructor that initializes an empty list for links
+        """
         self.links = []
 
     def get_listing_links(self, driver, url: str) -> None:
-
+        """Function to get the urls from each page"""
         driver.get(url)
         time.sleep(random.uniform(3, 5))
 
@@ -52,7 +59,11 @@ class listingScrapping:
             self.links.append(link)
 
     def call_driver(self) -> None:
+        """
+        Function to move between pages
+        """
 
+        # Divide listiings by provinces
         self.provinces = [
             "antwerp",
             "vlaams-brabant",
@@ -67,6 +78,7 @@ class listingScrapping:
             "luxembourg",
         ]
 
+        # User agent for driver
         ua = UserAgent()
 
         # Options for Driver
@@ -88,6 +100,7 @@ class listingScrapping:
             },
         )
 
+        # Looping through provinces and 50 first pages for each provinces
         for province in self.provinces:
             for page in range(1, 51):
 
@@ -98,6 +111,9 @@ class listingScrapping:
         driver.close()
 
     def save_to_csv(self, file_name: str) -> None:
+        """
+        Function to save links to a csv file
+        """
         with open(file_name, "w") as file:
             csv_writer = csv.writer(file)
             for link in self.links:

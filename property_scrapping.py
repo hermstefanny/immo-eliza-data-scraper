@@ -7,9 +7,15 @@ from fake_useragent import UserAgent
 from time import time, sleep
 
 
-# Class definition
 class PropertyScrapping:
+    """
+    Class that implements the functionalities to scrap each property from each urls
+    """
+
     def __init__(self) -> None:
+        """
+        Class Constructor
+        """
         self.properties = []
         self.urls = []
         self.total_time = 0
@@ -17,7 +23,7 @@ class PropertyScrapping:
     def open_links_file(
         self, csv_path: str, has_header: bool, number_of_rows: int = None
     ) -> None:
-
+        """Function that open links files. It can manage both header and headerless files"""
         try:
             if has_header:
                 urls_df = pd.read_csv(csv_path, header=0, nrows=number_of_rows)
@@ -33,7 +39,9 @@ class PropertyScrapping:
             print(f"Error {e}")
 
     def get_raw_property(self, url: str, session: requests.Session) -> BeautifulSoup:
-
+        """
+        Function that scraps individual listings and returns a soup object
+        """
         start_time = time()
 
         sleep(random.uniform(0.1, 0.25))
@@ -54,7 +62,10 @@ class PropertyScrapping:
         return soup
 
     def get_property_characteristics(self, url: str, soup: BeautifulSoup) -> dict:
-
+        """
+        Function that parses through each individual listing in soup object format and extract attributes
+        using BeautifulSoup functionalities
+        """
         property_characteristics = dict()
 
         try:
@@ -96,6 +107,12 @@ class PropertyScrapping:
         return property_characteristics
 
     def run_scrapping(self) -> None:
+        """
+        Function that creates a Session requests objects to perform the scrapping and run a loop to get each individual property.
+        Appends each property to self.properties list
+        Delivers a total time of scrapping session
+        """
+
         ua = UserAgent()
         headers = {
             "User-Agent": ua.random,
@@ -124,5 +141,9 @@ class PropertyScrapping:
         print(f"This scrapping has lasted {self.total_time/60} minutes")
 
     def save_to_csv(self, file_name: str) -> None:
+        """
+        Function that exports the list of dataframes to a csv file
+        """
+
         df_properties = pd.json_normalize(self.properties)
         df_properties.to_csv(file_name, index=False, encoding="utf-8")
