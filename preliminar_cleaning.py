@@ -41,7 +41,11 @@ class PreliminarCleaning:
     def column_cleaning(
         self, df: pd, columns_to_clean: List[str], in_place: bool = False
     ) -> pd:
-        df = df.drop(columns=columns_to_clean, inplace=in_place)
+        try:
+            df = df.drop(columns=columns_to_clean, inplace=in_place)
+
+        except Exception as e:
+            print(f"Error {e}")
 
         # dropping columns that have less than 10% values
         clean_pd = df.dropna(axis=1, thresh=0.10 * len(df))
